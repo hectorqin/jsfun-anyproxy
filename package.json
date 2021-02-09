@@ -1,0 +1,27 @@
+{
+  "uuid": "2f33d8de-c474-4f38-a19b-cf2cabh227cc",
+  "name": "anyproxy",
+  "displayName": "Anyproxy",
+  "version": "0.0.1",
+  "description": "anyproxy for mobile",
+  "icon": "assets/icon.png",
+  "main": "main.js",
+  "prefs": "assets/prefs.json",
+  "singleton": true,
+  "author": {
+    "name": "hectorqin",
+    "fullname": "hectorqin",
+    "email": "hectorqin@163.com"
+  },
+  "engines": {
+    "dora": ">=1.8.0"
+  },
+  "keywords": [
+    "Dora.js"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "anyproxy": "^4.1.3",
+    "sockx": "^0.2.0"
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "host": {
+    "type": "string",
+    "default": "127.0.0.1",
+    "title": "服务Host"
+  },
+  "port": {
+    "type": "number",
+    "default": 8001,
+    "title": "HTTP代理端口"
+  },
+  "socksPort": {
+    "type": "number",
+    "default": 8002,
+    "title": "Socks代理端口"
+  },
+  "webPort": {
+    "type": "number",
+    "default": 8003,
+    "title": "Web服务端口"
+  },
+  "mode": {
+    "type": "string",
+    "default": "VPN",
+    "title": "代理模式",
+    "options": [{
+        "value": "VPN",
+        "title": "VPN"
+      },
+      {
+        "value": "proxy",
+        "title": "Proxy"
+      }
+    ]
+  },
+  "script": {
+    "type": "boolean",
+    "default": false,
+    "title": "开启脚本功能"
+  },
+  "forceProxyHttps": {
+    "type": "boolean",
+    "default": false,
+    "title": "强制抓包HTTPS"
+  },
+  "dangerouslyIgnoreUnauthorized": {
+    "type": "boolean",
+    "default": true,
+    "title": "忽略证书错误"
+  },
+  "wsIntercept": {
+    "type": "boolean",
+    "default": true,
+    "title": "开启websocket代理"
+  },
+  "silent": {
+    "type": "boolean",
+    "default": true,
+    "title": "不输出日志"
+  }
+}
