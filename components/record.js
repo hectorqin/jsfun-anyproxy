@@ -26,6 +26,9 @@ module.exports = {
       return {
         title: item.method + ' ' + item.url,
         summary: '',
+        route: $route('recordInfo', {
+          id: item.id,
+        }),
         ...item,
       };
     });
