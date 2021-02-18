@@ -1,5 +1,5 @@
 module.exports = {
-  type: 'list',
+  type: 'topTab',
   title: '请求详情',
   async fetch({args}) {
     if (!global.anyproxyServer || !global.anyproxyServer.recorder) {
@@ -22,34 +22,86 @@ module.exports = {
     });
   },
   transformData(data) {
-    if (!data) {
-      return [];
+    let requestItems = [];
+    let responseItems = [];
+    if (data) {
+      requestItems = [
+        {
+          title: 'General',
+          type: 'category',
+        },
+        {
+          title: 'Method: ' + data.method,
+          type: 'simple',
+        },
+        {
+          title: 'Host: ' + data.host,
+          type: 'simple',
+        },
+        {
+          title: 'URL: ' + data.url,
+          type: 'simple',
+        },
+        {
+          title: 'Header',
+          type: 'category',
+        },
+        ...Object.keys(data.reqHeader).map((item) => {
+          return {
+            title: item + ': ' + data.reqHeader[item],
+            type: 'simple',
+          };
+        }),
+        {
+          title: 'Body',
+          type: 'category',
+        },
+        {
+          title: data.reqBody,
+          type: 'simple',
+        },
+      ];
+      responseItems = [
+        {
+          title: 'General',
+          type: 'category',
+        },
+        {
+          title: 'statusCode: ' + data.statusCode,
+          type: 'simple',
+        },
+        {
+          title: 'Header',
+          type: 'category',
+        },
+        ...Object.keys(data.resHeader).map((item) => {
+          return {
+            title: item + ': ' + data.resHeader[item],
+            type: 'simple',
+          };
+        }),
+        {
+          title: 'Body',
+          type: 'category',
+        },
+        {
+          title: data.resBody,
+          type: 'simple',
+        },
+      ];
     }
-
     return [
       {
-        title: 'Request',
-        type: 'category',
+        title: 'Reqeust',
+        route: $route('@list', {
+          items: requestItems,
+        }),
       },
       {
-        title: 'General',
-        type: 'category',
-      },
-      {
-        title: 'Method: ' + data.method,
-        type: 'simple',
-      },
-      {
-        title: 'Host: ' + data.host,
-        type: 'simple',
-      },
-      {
-        title: 'URL: ' + data.url,
-        type: 'simple',
-      },
-      {
-        title: 'Header',
-        type: 'category',
+        title: 'Response',
+        route: $route('@list', {
+          items: responseItems,
+        }),
       },
     ];
   },

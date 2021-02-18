@@ -128,6 +128,8 @@ module.exports = {
   resetMITMHosts() {
     mitmHosts = null;
   },
+  getLocalScripts: getLocalScripts,
+  getMITMHosts: getMITMHosts,
   // {
   //   host: "www.baidu.com",
   //   _req: { /* ... */}

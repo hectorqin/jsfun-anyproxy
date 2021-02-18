@@ -6,7 +6,7 @@ const defaultOptions = {
   host: '0.0.0.0', // HTTP/socks5代理Host
   socksPort: 8000, // socks5代理端口
   port: 8001, // HTTP代理端口
-  rule: require('myRuleModule'), // 自定义规则模块
+  // rule: require('myRuleModule'), // 自定义规则模块
   webInterface: {
     enable: true, // 是否启用web版界面，默认false
     webPort: 8002, // web版界面端口号，默认8002
