@@ -1,4 +1,5 @@
 const helper = require('../helper');
+const rule = require('../rule');
 
 const statusTip = {
   UNKNOW: '未知',
@@ -16,7 +17,7 @@ module.exports = {
     await helper.startHTTPProxy(options);
     if (options.mode === 'VPN') {
       await helper.startSocksProxy(options);
-      await $dora.setVPN2Socks(options.host, options.socksPort);
+      await helper.setVPN2Socks(options.host, options.socksPort);
     }
     this.initEventListener();
   },
@@ -68,7 +69,7 @@ module.exports = {
                 helper.startSocksProxy(status.options);
               }
               // 设置VPN
-              await $dora.setVPN2Socks(
+              await helper.setVPN2Socks(
                 status.options.host,
                 status.options.socksPort
               );
@@ -85,7 +86,7 @@ module.exports = {
       },
       {
         title: '脚本',
-        summary: status.options.script ? '已开启' + ' 0个' : '未开启',
+        summary: status.options.script ? '已开启' + ' ' + rule.getLocalScriptsCount() + '个' : '未开启',
         onClick: async () => {
           $prefs.set('script', !status.options.script);
           // 重启代理
@@ -103,8 +104,8 @@ module.exports = {
       },
       {
         title: 'MITM',
-        summary: '0个域名',
-        // onClick: async () => {},
+        summary: rule.getMITMHostsCount + '个域名',
+        route: $route('mitm'),
       },
       {
         title: 'HTTP代理端口',

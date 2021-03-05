@@ -104,3 +104,12 @@ module.exports.stopHTTPProxy = function () {
     global.anyproxyServer.close();
   }
 };
+
+module.exports.setVPN2Socks = async function(host, port) {
+  await $vpn.startTunnel('Anyproxy', {
+    name: 'Anyproxy',
+    type: 1, // 0 shadowsocks, 1 socks5
+    host: host,
+    port: port
+  })
+}

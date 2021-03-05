@@ -85,7 +85,15 @@ function getLocalScripts(type) {
       localScripts = {};
     }
   }
+  if (!type) {
+    return localScripts;
+  }
   return localScripts[type] || [];
+}
+
+function getLocalScriptsCount() {
+  const scripts = getLocalScripts();
+  return (scripts['http-request'] || []).length + (scripts['http-response'] || []).length
 }
 
 function getMITMHosts() {
@@ -101,13 +109,25 @@ function getMITMHosts() {
   return mitmHosts;
 }
 
-function runScript(script, context) {
+function getMITMHostsCount() {
+  const hosts = getMITMHosts();
+  return hosts.length;
+}
+
+function getScriptContent(scriptPath) {
+  if (!scriptPath) {
+    return;
+  }
   const scriptFile = getPath('scripts', script.path);
   if (!fs.existsSync(scriptFile)) {
     return;
   }
+  return fs.readFileSync(scriptFile);
+}
+
+function runScript(script, context) {
   try {
-    const scriptContent = fs.readFileSync(scriptFile);
+    const scriptContent = getScriptContent(script.path);
     const vmScript = new vm.Script(scriptContent);
     context = Object.assign({}, defaultScriptContext, context);
     vm.createContext(context);
@@ -129,7 +149,51 @@ module.exports = {
     mitmHosts = null;
   },
   getLocalScripts: getLocalScripts,
+  getLocalScriptsCount: getLocalScriptsCount,
   getMITMHosts: getMITMHosts,
+  getMITMHostsCount: getMITMHostsCount,
+  addLocalScript(scriptConfig) {
+    if (!scriptConfig.title || !scriptConfig.path || !scriptConfig.type || !scriptConfig.patern) {
+      return;
+    }
+    if (scriptConfig.type !== 'http-request' && scriptConfig.type !== 'http-response') {
+      return;
+    }
+    localScripts = getLocalScripts();
+    localScripts[scriptConfig.type] = localScripts[scriptConfig.type] || [];
+    localScripts[scriptConfig.type].push(scriptConfig);
+    fs.writeFileSync(getPath('script.json'), JSON.stringify(localScripts, null ,4));
+    this.resetLocalScript();
+  },
+  deleteLocalScript(scriptConfig) {
+    const list = getLocalScripts(scriptConfig.type);
+    for (let i = 0; i < list.length; i++) {
+      const s = list[i];
+      if (s.title === scriptConfig.title) {
+        list.splice(i, 1);
+      }
+    }
+    localScripts[scriptConfig.type] = list;
+    fs.writeFileSync(getPath('script.json'), JSON.stringify(localScripts, null ,4));
+    this.resetLocalScript();
+  },
+  addMITMHost(host) {
+    mitmHosts = getMITMHosts();
+    mitmHosts.push(host);
+    fs.writeFileSync(getPath('mitm.json'), JSON.stringify(mitmHosts, null ,4));
+    this.resetMITMHosts();
+  },
+  deleteMITMHost(host) {
+    mitmHosts = getMITMHosts();
+    for (let i = 0; i < mitmHosts.length; i++) {
+      const s = list[i];
+      if (s === host) {
+        mitmHosts.splice(i, 1);
+      }
+    }
+    fs.writeFileSync(getPath('mitm.json'), JSON.stringify(mitmHosts, null ,4));
+    this.resetMITMHosts();
+  },
   // {
   //   host: "www.baidu.com",
   //   _req: { /* ... */}
