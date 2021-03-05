@@ -27,6 +27,7 @@ module.exports.startSocksProxy = function (options) {
     }
     // socks5代理
     const socksServer = socks.createServer(function (info, accept, deny) {
+      console.log("socksServer info ", info);
       var dstPort = info.dstPort;
       var dstAddr = info.dstAddr;
       var connPath = dstAddr + ':' + dstPort;
@@ -89,9 +90,11 @@ module.exports.startHTTPProxy = function (options) {
 
     proxyServer.on('ready', () => {
       /* */
+      resolve();
     });
     proxyServer.on('error', (e) => {
       /* */
+      reject(e);
     });
     proxyServer.start();
 

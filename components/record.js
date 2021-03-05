@@ -4,12 +4,15 @@ module.exports = {
   async fetch() {
     const response = await $http
       .get(`${getWebAPI()}/latestLog`)
-      .catch(() => {});
+      .catch((e) => {
+        console.log(e);
+      });
 
+    console.log("response.data  ", response.data);
     let data = [];
     if (response) {
       try {
-        data = JSON.parse(response.data);
+        data = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
       } catch (error) {}
     }
 

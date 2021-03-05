@@ -14,11 +14,16 @@ module.exports = {
   async startProxy() {
     const options = getProxyOption();
     // 启动
+    console.log("startHTTPProxy  ", options);
     await helper.startHTTPProxy(options);
+    this.refresh();
     if (options.mode === 'VPN') {
+      console.log("startSocksProxy ");
       await helper.startSocksProxy(options);
+      console.log("setVPN2Socks ");
       await helper.setVPN2Socks(options.host, options.socksPort);
     }
+    console.log("startProxy success ");
     this.initEventListener();
   },
   async stopProxy() {
@@ -31,22 +36,23 @@ module.exports = {
   },
   async fetch() {
     const status = await getProxyStatus();
+    console.log("getProxyStatus", status);
     return [
       {
         title: 'Anyproxy ' + statusTip[status.status],
         summary:
-          status.status === 'READY' && status.status === 'INIT'
+          (status.status === 'READY' || status.status === 'INIT')
             ? '点击关闭'
             : '点击启动',
         onClick: async () => {
           // 切换代理模式
           try {
-            if (status.status === 'READY' && status.status === 'INIT') {
+            if (status.status === 'READY' || status.status === 'INIT') {
               // 关闭
-              this.stopProxy();
+              await this.stopProxy();
             } else {
               // 启动
-              this.startProxy();
+              await this.startProxy();
             }
           } catch (error) {
             console.error(error);
@@ -66,7 +72,7 @@ module.exports = {
             if (status.mode === 'VPN') {
               // 启动 socksServer
               if (!status.socksPortInUse) {
-                helper.startSocksProxy(status.options);
+                await helper.startSocksProxy(status.options);
               }
               // 设置VPN
               await helper.setVPN2Socks(
@@ -104,7 +110,7 @@ module.exports = {
       },
       {
         title: 'MITM',
-        summary: rule.getMITMHostsCount + '个域名',
+        summary: rule.getMITMHostsCount() + '个域名',
         route: $route('mitm'),
       },
       {

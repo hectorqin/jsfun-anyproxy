@@ -1,5 +1,5 @@
 const rule = require('../rule');
-let scriptConfig;
+let scriptConfig = {};
 // {
 //   "title": "xx",
 //   "type": "http-request",

@@ -1,13 +1,18 @@
 {
   "uuid": "2f33d8de-c474-4f38-a19b-cf2cabh227cc",
-  "name": "anyproxy",
+  "name": "jsfun-anyproxy",
   "displayName": "Anyproxy",
   "version": "0.0.1",
-  "description": "anyproxy for mobile",
+  "description": "Anyproxy for mobile, running in JSFun App",
   "icon": "assets/icon.png",
   "main": "main.js",
   "prefs": "assets/prefs.json",
+  "homepage": "https://github.com/hectorqin/jsfun-anyproxy",
   "singleton": true,
+  "scripts": {
+    "lint": "eslint .",
+    "sync": "ls | sed 's/node_modules//g' | xargs -I {} adb push {} /data/data/com.htmake.jsfun/files/addons/2f33d8de-c474-4f38-a19b-cf2cabh227cc/src"
+  },
   "author": {
     "name": "hectorqin",
     "fullname": "hectorqin",
