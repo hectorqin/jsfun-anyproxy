@@ -28,11 +28,11 @@ module.exports = {
   },
   async stopProxy() {
     const options = getProxyOption();
-    helper.stopHTTPProxy();
-    helper.stopSocksProxy();
     if (options.mode === 'VPN') {
-      await $dora.closeVPN();
+      await helper.stopTunnel();
     }
+    helper.stopSocksProxy();
+    helper.stopHTTPProxy();
   },
   async fetch() {
     const status = await getProxyStatus();

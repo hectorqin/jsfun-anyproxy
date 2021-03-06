@@ -1,6 +1,9 @@
 const socks = require('sockx');
 const http = require('http');
 const AnyProxy = require('anyproxy');
+const dgram = require('dgram');
+const net = require('net');
+const ip = require('ip');
 
 const defaultOptions = {
   host: '0.0.0.0', // HTTP/socks5代理Host
@@ -18,9 +21,142 @@ const defaultOptions = {
   // silent: false, // 是否屏蔽所有console输出，默认false
 };
 
+const ATYP_V4 = 0x01;
+const ATYP_DOMAIN = 0x03;
+const ATYP_V6 = 0x04;
+
+const BYTE_ORDER_BE = 0;
+const BYTE_ORDER_LE = 1;
+
+/**
+ * convert an unsigned number to a buffer,
+ * with specified length in specified byte order.
+ * @param num
+ * @param len
+ * @param byteOrder
+ * @returns {Buffer}
+ */
+function numberToBuffer(num, len = 2, byteOrder = BYTE_ORDER_BE) {
+  if (len < 1) {
+    throw Error('len must be greater than 0');
+  }
+  const buf = Buffer.alloc(len);
+  if (byteOrder === BYTE_ORDER_BE) {
+    buf.writeUIntBE(num, 0, len);
+  } else {
+    buf.writeUIntLE(num, 0, len);
+  }
+  return buf;
+}
+
+function getHostType(host) {
+  if (net.isIPv4(host)) {
+    return ATYP_V4;
+  }
+  if (net.isIPv6(host)) {
+    return ATYP_V6;
+  }
+  return ATYP_DOMAIN;
+}
+
+function parseSocks5UdpRequest(buffer) {
+  if (buffer.length < 10) {
+    return null;
+  }
+  if (buffer[0] !== 0x00 || buffer[1] !== 0x00) {
+    return null;
+  }
+  const frag = buffer[2];
+  if (frag !== 0x00) {
+    return null; // doesn't support fragment
+  }
+  let addr = null;
+  let pos = 4;
+  switch (buffer[3]) {
+    case ATYP_V4:
+      addr = ip.toString(buffer.slice(4, 8));
+      pos = pos + 4;
+      break;
+    case ATYP_DOMAIN:
+      addr = buffer.slice(5, 5 + buffer[4]).toString();
+      pos = pos + 1 + buffer[4];
+      break;
+    case ATYP_V6:
+      addr = ip.toString(buffer.slice(4, 20));
+      pos = pos + 16;
+      break;
+    default:
+      break;
+  }
+  const port = buffer.slice(pos, pos + 2).readUInt16BE(0);
+  const data = buffer.slice(pos + 2);
+  return { host: addr, port: port, data: data };
+}
+
+function encodeSocks5UdpResponse({ host, port, data }) {
+  const atyp = getHostType(host);
+  const _host = atyp === ATYP_DOMAIN ? Buffer.from(host) : ip.toBuffer(host);
+  const _port = numberToBuffer(port);
+  return Buffer.from([
+    0x00, 0x00, 0x00, atyp,
+    ...(atyp === ATYP_DOMAIN ? [_host.length] : []),
+    ..._host, ..._port, ...data
+  ]);
+}
+
+async function createUdpServer(options) {
+  options = Object.assign({}, defaultOptions, options || {});
+  return new Promise((resolve, reject) => {
+    const serverUDP = dgram.createSocket('udp4');
+
+    serverUDP.on('message', (msg, rinfo) => {
+      const parsed = parseSocks5UdpRequest(msg);
+      if (parsed === null) {
+        console.info(`UDP[ERROR] - [${rinfo.address}:${rinfo.port}] drop invalid udp packet: ${dumpHex(msg)}`);
+        return;
+      }
+      const { host, port, data } = parsed;
+
+      let client = dgram.createSocket('udp4');
+      client.on('error', (err) => {
+          console.info(`UDP[ERROR] - ${err}`);
+          client.close();
+      });
+      client.on('message', (fbMsg, fbRinfo) => {
+          serverUDP.send(fbMsg, rinfo.port, rinfo.address, (err) => {
+              if (err) console.error(`UDP[ERROR] - ${err}`);
+          });
+          client.close();
+      });
+      client.send(data, port, host, (err) => {
+          if (err) {
+              console.error(`UDP[ERROR] - ${err}`);
+              client.close();
+          }
+      });
+    });
+
+    serverUDP.on('error', reject);
+
+    // monkey patch for Socket.send() to meet Socks5 protocol
+    serverUDP.send = ((send) => (data, port, host, ...args) => {
+      let packet = encodeSocks5UdpResponse({ host, port, data });
+      send.call(serverUDP, packet, port, host, ...args);
+    })(serverUDP.send);
+
+    serverUDP.bind({ address: options.host, port: options.socksPort }, () => {
+      const service = `udp://${options.host}:${options.socksPort}`;
+      console.info(`udp relay server is running at ${service}`);
+      resolve(serverUDP);
+    });
+  });
+}
+
 module.exports.startSocksProxy = function (options) {
   options = Object.assign({}, defaultOptions, options || {});
-  return new Promise(function (resolve, reject) {
+  return Promise.all([
+    createUdpServer(options),
+    new Promise(function (resolve, reject) {
     if (!global.anyproxyServer) {
       reject('请先启动Anyproxy');
       return;
@@ -28,6 +164,11 @@ module.exports.startSocksProxy = function (options) {
     // socks5代理
     const socksServer = socks.createServer(function (info, accept, deny) {
       console.log("socksServer info ", info);
+      if (info.dstPort === 53) {
+        console.log("accept()");
+        accept();
+        return;
+      }
       var dstPort = info.dstPort;
       var dstAddr = info.dstAddr;
       var connPath = dstAddr + ':' + dstPort;
@@ -64,21 +205,24 @@ module.exports.startSocksProxy = function (options) {
       client.end();
     });
 
+    socksServer.on('error', reject);
+
     socksServer.listen(options.socksPort, options.host, function () {
       console.log(
-        'SOCKS server listening at ' + options.host + ':' + options.socksPort
+        'SOCKS5 server listening at ' + options.host + ':' + options.socksPort
       );
-      resolve();
+      resolve(socksServer);
     });
     socksServer.useAuth(socks.auth.None());
 
     global.anyproxyServer.socksServer = socksServer;
-  });
+  })]);
 };
 
 module.exports.stopSocksProxy = function () {
   if (global.anyproxyServer && global.anyproxyServer.socksServer) {
     global.anyproxyServer.socksServer.close();
+    global.anyproxyServer.socksServer = null;
   }
 };
 
@@ -105,6 +249,7 @@ module.exports.startHTTPProxy = function (options) {
 module.exports.stopHTTPProxy = function () {
   if (global.anyproxyServer) {
     global.anyproxyServer.close();
+    global.anyproxyServer = null;
   }
 };
 
@@ -113,6 +258,12 @@ module.exports.setVPN2Socks = async function(host, port) {
     name: 'Anyproxy',
     type: 1, // 0 shadowsocks, 1 socks5
     host: host,
-    port: port
+    port: port,
+    udpRelay: true,
+    dnsServer: '114.114.114.114'
   })
+}
+
+module.exports.stopTunnel = async function() {
+  await $vpn.stopTunnel('Anyproxy');
 }
