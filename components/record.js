@@ -51,6 +51,7 @@ module.exports = {
         ...item,
       });
     });
+    return data;
   },
   created() {},
 };
