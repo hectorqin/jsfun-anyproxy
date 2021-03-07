@@ -34,18 +34,22 @@ module.exports = {
     if (!list) {
       return [];
     }
-    return list.map((item) => {
+    const data = [];
+    list.map((item) => {
       delete item.reqHeader;
       delete item.reqBody;
       delete item.resHeader;
-      return {
+      if (this.filterConnect && item.method === 'CONNECT') {
+        return;
+      }
+      data.push({
         title: item.method + ' ' + item.url,
         summary: '',
         route: $route('recordInfo', {
           id: item.id,
         }),
         ...item,
-      };
+      });
     });
   },
   created() {},

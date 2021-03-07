@@ -119,7 +119,7 @@ async function createUdpServer(options) {
     const serverUDP = dgram.createSocket('udp4');
 
     serverUDP.on('message', (msg, rinfo) => {
-      console.info(`UDP[INFO] - received msg `, rinfo, msg);
+      // console.info(`UDP[INFO] - received msg `, rinfo, msg);
       const parsed = parseSocks5UdpRequest(msg);
       if (parsed === null) {
         console.info(`UDP[ERROR] - [${rinfo.address}:${rinfo.port}] drop invalid udp packet: ${dumpHex(msg)}`);
@@ -130,7 +130,7 @@ async function createUdpServer(options) {
         port,
         data
       } = parsed;
-      console.info(`UDP[INFO] - parsed `, parsed);
+      // console.info(`UDP[INFO] - parsed `, parsed);
 
       let client = dgram.createSocket('udp4');
       client.on('error', (err) => {
@@ -139,17 +139,18 @@ async function createUdpServer(options) {
         client = null;
       });
       client.on('message', (fbMsg, fbRinfo) => {
-        console.info(`UDP client[INFO] - received `, fbRinfo, fbMsg);
+        // console.info(`UDP client[INFO] - received `, fbRinfo, fbMsg);
+        // console.info(`UDP client[INFO] - received `, fbRinfo, fbMsg);
         serverUDP.send(fbMsg, rinfo.port, rinfo.address, (err) => {
           if (err) console.error(`UDP[ERROR] - ${err}`);
         });
         client.close();
         client = null;
       });
-      console.info(`UDP client[INFO] - send to ${host}:${port}`);
+      // console.info(`UDP client[INFO] - send to ${host}:${port}`);
       client.send(data, port, host, (err) => {
         if (err) {
-          console.error(`UDP[ERROR] - ${err}`);
+          console.info(`UDP[ERROR] - ${err}`);
           client.close();
           client = null;
         }
@@ -198,9 +199,7 @@ module.exports.startSocksProxy = function (options) {
       }
       // socks5代理
       const socksServer = socks.createServer(function (info, accept, deny) {
-        console.log("socksServer info ", info);
         if (info.dstPort === 53) {
-          console.log("accept()");
           accept();
           return;
         }
