@@ -118,7 +118,7 @@ function getScriptContent(scriptPath) {
   if (!scriptPath) {
     return;
   }
-  const scriptFile = getPath('scripts', script.path);
+  const scriptFile = getPath('scripts', scriptPath);
   if (!fs.existsSync(scriptFile)) {
     return;
   }
