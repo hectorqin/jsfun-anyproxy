@@ -59,7 +59,7 @@ function getHostType(host) {
   return ATYP_DOMAIN;
 }
 
-function parseSocks5UdpRequest(buffer) {
+function parseSocks5UdpRequest (buffer) {
   if (buffer.length < 10) {
     return null;
   }
@@ -90,10 +90,19 @@ function parseSocks5UdpRequest(buffer) {
   }
   const port = buffer.slice(pos, pos + 2).readUInt16BE(0);
   const data = buffer.slice(pos + 2);
-  return { host: addr, port: port, data: data };
+  return {
+    host: addr,
+    port: port,
+    data: data
+  };
 }
+module.exports.parseSocks5UdpRequest = parseSocks5UdpRequest;
 
-function encodeSocks5UdpResponse({ host, port, data }) {
+function encodeSocks5UdpResponse({
+  host,
+  port,
+  data
+}) {
   const atyp = getHostType(host);
   const _host = atyp === ATYP_DOMAIN ? Buffer.from(host) : ip.toBuffer(host);
   const _port = numberToBuffer(port);
@@ -116,112 +125,143 @@ async function createUdpServer(options) {
         console.info(`UDP[ERROR] - [${rinfo.address}:${rinfo.port}] drop invalid udp packet: ${dumpHex(msg)}`);
         return;
       }
-      const { host, port, data } = parsed;
+      const {
+        host,
+        port,
+        data
+      } = parsed;
       console.info(`UDP[INFO] - parsed `, parsed);
 
       let client = dgram.createSocket('udp4');
       client.on('error', (err) => {
-          console.info(`UDP[ERROR] - ${err}`);
-          client.close();
+        console.info(`UDP[ERROR] - ${err}`);
+        client.close();
+        client = null;
       });
       client.on('message', (fbMsg, fbRinfo) => {
-          serverUDP.send(fbMsg, rinfo.port, rinfo.address, (err) => {
-              if (err) console.error(`UDP[ERROR] - ${err}`);
-          });
-          client.close();
+        console.info(`UDP client[INFO] - received `, fbRinfo, fbMsg);
+        serverUDP.send(fbMsg, rinfo.port, rinfo.address, (err) => {
+          if (err) console.error(`UDP[ERROR] - ${err}`);
+        });
+        client.close();
+        client = null;
       });
+      console.info(`UDP client[INFO] - send to ${host}:${port}`);
       client.send(data, port, host, (err) => {
-          if (err) {
-              console.error(`UDP[ERROR] - ${err}`);
-              client.close();
-          }
+        if (err) {
+          console.error(`UDP[ERROR] - ${err}`);
+          client.close();
+          client = null;
+        }
       });
+      setTimeout(() => {
+        if (client) {
+          client.close();
+        }
+      }, 3000);
     });
 
     serverUDP.on('error', reject);
 
     // monkey patch for Socket.send() to meet Socks5 protocol
     serverUDP.send = ((send) => (data, port, host, ...args) => {
-      let packet = encodeSocks5UdpResponse({ host, port, data });
+      let packet = encodeSocks5UdpResponse({
+        host,
+        port,
+        data
+      });
       send.call(serverUDP, packet, port, host, ...args);
     })(serverUDP.send);
 
-    serverUDP.bind({ address: options.host, port: options.socksPort }, () => {
+    serverUDP.bind({
+      address: options.host,
+      port: options.socksPort
+    }, () => {
       const service = `udp://${options.host}:${options.socksPort}`;
       console.info(`udp relay server is running at ${service}`);
       resolve(serverUDP);
     });
+
+    global.udpServer = serverUDP;
   });
 }
+module.exports.createUdpServer = createUdpServer;
 
 module.exports.startSocksProxy = function (options) {
   options = Object.assign({}, defaultOptions, options || {});
   return Promise.all([
     createUdpServer(options),
     new Promise(function (resolve, reject) {
-    if (!global.anyproxyServer) {
-      reject('请先启动Anyproxy');
-      return;
-    }
-    // socks5代理
-    const socksServer = socks.createServer(function (info, accept, deny) {
-      console.log("socksServer info ", info);
-      if (info.dstPort === 53) {
-        console.log("accept()");
-        accept();
+      if (!global.anyproxyServer) {
+        reject('请先启动Anyproxy');
         return;
       }
-      var dstPort = info.dstPort;
-      var dstAddr = info.dstAddr;
-      var connPath = dstAddr + ':' + dstPort;
-      var headers = {host: connPath};
-      headers['x-anyproxy-server'] = 'socks';
-      var client = http.request({
-        method: 'CONNECT',
-        agent: false,
-        path: connPath,
-        host: '127.0.0.1',
-        port: options.port,
-        headers: headers,
+      // socks5代理
+      const socksServer = socks.createServer(function (info, accept, deny) {
+        console.log("socksServer info ", info);
+        if (info.dstPort === 53) {
+          console.log("accept()");
+          accept();
+          return;
+        }
+        var dstPort = info.dstPort;
+        var dstAddr = info.dstAddr;
+        var connPath = dstAddr + ':' + dstPort;
+        var headers = {
+          host: connPath
+        };
+        headers['x-anyproxy-server'] = 'socks';
+        var client = http.request({
+          method: 'CONNECT',
+          agent: false,
+          path: connPath,
+          host: '127.0.0.1',
+          port: options.port,
+          headers: headers,
+        });
+        var destroy = function () {
+          if (client) {
+            client.abort();
+            client = null;
+            deny();
+          }
+        };
+        client.on('error', destroy);
+        client.on('connect', function (res, socket) {
+          socket.on('error', destroy);
+          if (res.statusCode !== 200) {
+            return destroy();
+          }
+          var reqSock = accept(true);
+          if (reqSock) {
+            reqSock.pipe(socket).pipe(reqSock);
+          } else {
+            destroy();
+          }
+        });
+        client.end();
       });
-      var destroy = function () {
-        if (client) {
-          client.abort();
-          client = null;
-          deny();
-        }
-      };
-      client.on('error', destroy);
-      client.on('connect', function (res, socket) {
-        socket.on('error', destroy);
-        if (res.statusCode !== 200) {
-          return destroy();
-        }
-        var reqSock = accept(true);
-        if (reqSock) {
-          reqSock.pipe(socket).pipe(reqSock);
-        } else {
-          destroy();
-        }
+
+      socksServer.on('error', reject);
+
+      socksServer.listen(options.socksPort, options.host, function () {
+        console.log(
+          'SOCKS5 server listening at ' + options.host + ':' + options.socksPort
+        );
+        resolve(socksServer);
       });
-      client.end();
-    });
+      socksServer.useAuth(socks.auth.None());
 
-    socksServer.on('error', reject);
-
-    socksServer.listen(options.socksPort, options.host, function () {
-      console.log(
-        'SOCKS5 server listening at ' + options.host + ':' + options.socksPort
-      );
-      resolve(socksServer);
-    });
-    socksServer.useAuth(socks.auth.None());
-
-    global.anyproxyServer.socksServer = socksServer;
-  })]);
+      global.anyproxyServer.socksServer = socksServer;
+    })
+  ]);
 };
 
 module.exports.stopSocksProxy = function () {
+  if (global.udpServer) {
+    global.udpServer.close();
+    global.udpServer = null;
+  }
   if (global.anyproxyServer && global.anyproxyServer.socksServer) {
     global.anyproxyServer.socksServer.close();
     global.anyproxyServer.socksServer = null;
@@ -255,17 +295,21 @@ module.exports.stopHTTPProxy = function () {
   }
 };
 
-module.exports.setVPN2Socks = async function(host, port) {
+module.exports.setVPN2Socks = async function (host, port) {
   await $vpn.startTunnel('Anyproxy', {
     name: 'Anyproxy',
     type: 1, // 0 shadowsocks, 1 socks5
     host: host,
     port: port,
     udpRelay: true,
-    dnsServer: '114.114.114.114'
+    dnsServer: '114.114.114.114',
+    applicationMode: 1,
+    applications: [
+      'com.android.browser'
+    ],
   })
 }
 
-module.exports.stopTunnel = async function() {
+module.exports.stopTunnel = async function () {
   await $vpn.stopTunnel('Anyproxy');
 }

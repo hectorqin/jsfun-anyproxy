@@ -67,9 +67,9 @@ module.exports = {
         onClick: async () => {
           $prefs.set('mode', status.options.mode === 'VPN' ? 'proxy' : 'VPN');
           // 设置代理
-          if (status === 'READY' && status.status === 'INIT') {
+          if (status.status === 'READY' || status.status === 'INIT') {
             // 切换代理模式
-            if (status.mode === 'VPN') {
+            if (status.options.mode !== 'VPN') {
               // 启动 socksServer
               if (!status.socksPortInUse) {
                 await helper.startSocksProxy(status.options);
@@ -81,7 +81,7 @@ module.exports = {
               );
             } else {
               // 关闭 VPN
-              await $dora.closeVPN();
+              await helper.stopTunnel();
               // 关闭 socksServer
               helper.stopSocksProxy();
             }

@@ -8,9 +8,9 @@ module.exports = {
         console.log(e);
       });
 
-    console.log("response.data  ", response.data);
     let data = [];
     if (response) {
+      console.log("response.data  ", response.data);
       try {
         data = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
       } catch (error) {}
