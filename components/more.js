@@ -7,6 +7,13 @@ module.exports = {
         title: '本地脚本管理',
         type: 'simple',
         route: $route('edit'),
+      },
+      {
+        title: 'Data目录管理',
+        type: 'simple',
+        route: $route('edit', {
+          data: true
+        }),
       }
     ];
   },

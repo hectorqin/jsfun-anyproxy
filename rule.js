@@ -143,6 +143,9 @@ function runScript(script, context) {
 
 module.exports = {
   summary: 'Loon script adapter',
+  getDataPath() {
+    return userData;
+  },
   getScriptPath() {
     return scriptsPath;
   },
