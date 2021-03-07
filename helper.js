@@ -110,12 +110,14 @@ async function createUdpServer(options) {
     const serverUDP = dgram.createSocket('udp4');
 
     serverUDP.on('message', (msg, rinfo) => {
+      console.info(`UDP[INFO] - received msg `, rinfo, msg);
       const parsed = parseSocks5UdpRequest(msg);
       if (parsed === null) {
         console.info(`UDP[ERROR] - [${rinfo.address}:${rinfo.port}] drop invalid udp packet: ${dumpHex(msg)}`);
         return;
       }
       const { host, port, data } = parsed;
+      console.info(`UDP[INFO] - parsed `, parsed);
 
       let client = dgram.createSocket('udp4');
       client.on('error', (err) => {

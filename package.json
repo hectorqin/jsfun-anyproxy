@@ -2,7 +2,7 @@
   "uuid": "2f33d8de-c474-4f38-a19b-cf2cabh227cc",
   "name": "jsfun-anyproxy",
   "displayName": "Anyproxy",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Anyproxy for mobile, running in JSFun App",
   "icon": "assets/icon.png",
   "main": "main.js",
