@@ -1,6 +1,18 @@
 module.exports = {
   type: 'list',
   title: '抓包记录',
+  filterConnect: false,
+  actions: [
+    {
+      id: 'filter',
+      title: '过滤',
+      // icon: $icon('refresh'),
+      onClick() {
+        this.filterConnect = !this.filterConnect;
+        this.refresh();
+      }
+    }
+  ],
   async fetch() {
     const response = await $http
       .get(`${getWebAPI()}/latestLog`)

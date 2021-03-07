@@ -15,7 +15,9 @@ module.exports = {
             hint: 'host',
             value: ''
         });
-        rule.addMITMHost(host);
+        if (host) {
+          rule.addMITMHost(host);
+        }
       },
     },
   ],
@@ -32,7 +34,7 @@ module.exports = {
                     okBtn: '确定'
                 });
                 if (ok) {
-                    rule.deleteMITMHost(host);
+                    rule.deleteMITMHost(item);
                 }
             }
         }

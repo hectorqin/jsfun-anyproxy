@@ -80,7 +80,7 @@ function getLocalScripts(type) {
     try {
       localScripts = JSON.parse(fs.readFileSync(getPath('script.json')));
     } catch (error) {
-      console.warn('未配置脚本列表，初始化为{}');
+      console.info('未配置脚本列表，初始化为{}');
       fs.writeFileSync(getPath('script.json'), '{}');
       localScripts = {};
     }
@@ -101,7 +101,7 @@ function getMITMHosts() {
     try {
       mitmHosts = JSON.parse(fs.readFileSync(getPath('mitm.json')));
     } catch (error) {
-      console.warn('未配置 MITM 域名，初始化为[]');
+      console.info('未配置 MITM 域名，初始化为[]');
       fs.writeFileSync(getPath('mitm.json'), '[]');
       mitmHosts = [];
     }
@@ -127,6 +127,7 @@ function getScriptContent(scriptPath) {
 
 function runScript(script, context) {
   try {
+    console.info('运行脚本 ', script.title);
     const scriptContent = getScriptContent(script.path);
     const vmScript = new vm.Script(scriptContent);
     context = Object.assign({}, defaultScriptContext, context);
@@ -142,6 +143,9 @@ function runScript(script, context) {
 
 module.exports = {
   summary: 'Loon script adapter',
+  getScriptPath() {
+    return scriptsPath;
+  },
   resetLocalScript() {
     localScripts = null;
   },
