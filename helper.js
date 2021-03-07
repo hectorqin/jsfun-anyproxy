@@ -4,6 +4,7 @@ const AnyProxy = require('anyproxy');
 const dgram = require('dgram');
 const net = require('net');
 const ip = require('ip');
+const fs = require("fs");
 
 const defaultOptions = {
   host: '0.0.0.0', // HTTP/socks5代理Host
@@ -294,8 +295,20 @@ module.exports.stopHTTPProxy = function () {
   }
 };
 
+function getVPNConfig() {
+  try {
+    const VPNConfig = path.resolve(process.env.DATA_DIR, 'VPN.json');
+    if (!fs.existsSync(VPNConfig)) {
+      return {};
+    }
+    return JSON.parse(fs.readFileSync(VPNConfig) || '{}');
+  } catch (error) {
+    return {};
+  }
+}
+
 module.exports.setVPN2Socks = async function (host, port) {
-  await $vpn.startTunnel('Anyproxy', {
+  await $vpn.startTunnel('Anyproxy', Object.assign({
     name: 'Anyproxy',
     type: 1, // 0 shadowsocks, 1 socks5
     host: host,
@@ -306,7 +319,7 @@ module.exports.setVPN2Socks = async function (host, port) {
     applications: [
       'com.android.browser'
     ],
-  })
+  }, getVPNConfig()))
 }
 
 module.exports.stopTunnel = async function () {
