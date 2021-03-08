@@ -36,7 +36,7 @@ module.exports = {
   },
   async fetch() {
     const status = await getProxyStatus();
-    console.log("getProxyStatus", status);
+    // console.log("getProxyStatus", status);
     return [
       {
         title: 'Anyproxy ' + statusTip[status.status],

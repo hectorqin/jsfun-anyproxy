@@ -5,6 +5,15 @@ module.exports = {
   title: "MITM Hosts管理",
   actions: [
     {
+      id: "Refresh",
+      title: "Refresh",
+      // icon: $icon('refresh'),
+      async onClick() {
+        rule.resetMITMHosts();
+        this.refresh();
+      },
+    },
+    {
       id: "Add",
       title: "Add",
       // icon: $icon('refresh'),
@@ -23,11 +32,21 @@ module.exports = {
   ],
   async fetch() {
     const hosts = rule.getMITMHosts();
-    return hosts.map((item)=>{
+    return hosts.map((item, index)=>{
         return {
             title: item,
             type: 'simple',
             async onClick() {
+              const host = await $input.prompt({
+                title: '请输入host',
+                hint: 'host',
+                value: item
+              });
+              if (host) {
+                rule.saveMITMHost(host, index);
+              }
+            },
+            async onLongClick() {
                 let ok = await $input.confirm({
                     title: '操作确认',
                     message: '确认要删除吗?',

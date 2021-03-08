@@ -315,7 +315,7 @@ module.exports.setVPN2Socks = async function (host, port) {
     port: port,
     udpRelay: true,
     dnsServer: '114.114.114.114',
-    applicationMode: 1,
+    vpnMode: 1,
     applications: [
       'com.android.browser'
     ],

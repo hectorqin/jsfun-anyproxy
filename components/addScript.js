@@ -12,6 +12,7 @@ let scriptConfig = {};
 module.exports = {
   type: "list",
   title: "添加脚本",
+  isAdd: true,
   actions: [
     {
       id: "Save",
@@ -23,12 +24,21 @@ module.exports = {
           $ui.toast("参数错误");
           return;
         }
-        rule.addLocalScript(scriptConfig);
-        scriptConfig={};
+        if (this.isAdd) {
+          rule.addLocalScript(scriptConfig);
+          scriptConfig={};
+        } else {
+          rule.saveLocalScript(scriptConfig);
+        }
       },
     },
   ],
-  async fetch() {
+  async fetch({args}) {
+    if (args.script) {
+      scriptConfig = args.script;
+      this.isAdd = false;
+      this.title = "编辑脚本";
+    }
     return [
       {
         title: "名称",

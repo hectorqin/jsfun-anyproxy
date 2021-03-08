@@ -172,6 +172,24 @@ module.exports = {
     fs.writeFileSync(getPath('script.json'), JSON.stringify(localScripts, null ,4));
     this.resetLocalScript();
   },
+  saveLocalScript(scriptConfig) {
+    if (!scriptConfig.title || !scriptConfig.path || !scriptConfig.type || !scriptConfig.patern) {
+      return;
+    }
+    if (scriptConfig.type !== 'http-request' && scriptConfig.type !== 'http-response') {
+      return;
+    }
+    const list = getLocalScripts(scriptConfig.type);
+    for (let i = 0; i < list.length; i++) {
+      const s = list[i];
+      if (s.title === scriptConfig.title) {
+        list[i] = scriptConfig;
+      }
+    }
+    localScripts[scriptConfig.type] = list;
+    fs.writeFileSync(getPath('script.json'), JSON.stringify(localScripts, null ,4));
+    this.resetLocalScript();
+  },
   deleteLocalScript(scriptConfig) {
     const list = getLocalScripts(scriptConfig.type);
     for (let i = 0; i < list.length; i++) {
@@ -190,11 +208,22 @@ module.exports = {
     fs.writeFileSync(getPath('mitm.json'), JSON.stringify(mitmHosts, null ,4));
     this.resetMITMHosts();
   },
+  saveMITMHost(host, index) {
+    if (!host || index < 0) {
+      return;
+    }
+    mitmHosts = getMITMHosts();
+    mitmHosts[index] = host;
+    fs.writeFileSync(getPath('mitm.json'), JSON.stringify(mitmHosts, null ,4));
+    this.resetMITMHosts();
+  },
   deleteMITMHost(host) {
+    if (!host) {
+      return;
+    }
     mitmHosts = getMITMHosts();
     for (let i = 0; i < mitmHosts.length; i++) {
-      const s = list[i];
-      if (s === host) {
+      if (mitmHosts[i] === host) {
         mitmHosts.splice(i, 1);
       }
     }

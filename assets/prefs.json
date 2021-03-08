@@ -38,6 +38,11 @@
     "default": false,
     "title": "开启脚本功能"
   },
+  "hideConnect": {
+    "type": "boolean",
+    "default": true,
+    "title": "隐藏Connect记录"
+  },
   "forceProxyHttps": {
     "type": "boolean",
     "default": false,

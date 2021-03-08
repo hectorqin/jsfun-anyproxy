@@ -1,7 +1,7 @@
 module.exports = {
   type: 'list',
   title: '抓包记录',
-  filterConnect: false,
+  filterConnect: !!$prefs.get('hideConnect'),
   actions: [
     {
       id: 'filter',
@@ -9,6 +9,7 @@ module.exports = {
       // icon: $icon('refresh'),
       onClick() {
         this.filterConnect = !this.filterConnect;
+        $prefs.set('hideConnect', this.filterConnect);
         this.refresh();
       }
     }
@@ -22,7 +23,7 @@ module.exports = {
 
     let data = [];
     if (response) {
-      console.log("response.data  ", response.data);
+      // console.log("response.data  ", response.data);
       try {
         data = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
       } catch (error) {}

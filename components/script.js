@@ -32,7 +32,10 @@ module.exports = {
           title: item.title,
           summary: '脚本: ' + item.path,
           type: 'simple',
-          async onClick() {
+          route: $route('addScript', {
+            script: item
+          }),
+          async onLongClick() {
             let ok = await $input.confirm({
                 title: '操作确认',
                 message: '确认要删除吗?',
