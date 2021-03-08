@@ -272,12 +272,12 @@ module.exports = {
   //   _req: { /* ... */}
   // }
   beforeSendRequest(requestDetail) {
-    if (!this.scriptEnabled) {
-      return null;
-    }
-    const scripts = getLocalScripts('http-request');
-    let modified = {};
     return new Promise(function (resolve) {
+      if (!this.scriptEnabled) {
+        resolve(null);
+        return;
+      }
+      let modified = {};
       const context = {
         $request: Object.assign(
           {
@@ -299,6 +299,7 @@ module.exports = {
           modified = Object.assign(modified, options || {});
         },
       };
+      const scripts = getLocalScripts('http-request');
       for (let index = 0; index < scripts.length; index++) {
         const script = scripts[index];
         const regexp = script.regexp || new RegExp(script.patern);
@@ -334,12 +335,12 @@ module.exports = {
   //   _res: { /* ... */ }
   // }
   beforeSendResponse(requestDetail, responseDetail) {
-    if (!this.scriptEnabled) {
-      return null;
-    }
-    const scripts = getLocalScripts('http-response');
-    let modified = {};
     return new Promise(function (resolve) {
+      if (!this.scriptEnabled) {
+        resolve(null);
+        return;
+      }
+      let modified = {};
       const context = {
         $request: Object.assign(
           {
@@ -361,6 +362,7 @@ module.exports = {
           modified = Object.assign(modified, options || {});
         },
       };
+      const scripts = getLocalScripts('http-response');
       for (let index = 0; index < scripts.length; index++) {
         const script = scripts[index];
         const regexp = script.regexp || new RegExp(script.patern);
