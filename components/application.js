@@ -4,6 +4,7 @@ module.exports = {
   type: "list",
   title: "白/黑名单管理",
   selectedApplications: new Set(),
+  applicationList: [],
   actions: [
     {
       id: "Save",
@@ -18,14 +19,10 @@ module.exports = {
     },
   ],
   async fetch() {
-    const VPNConfig = helper.getVPNConfig();
-    this.selectedApplications = new Set(VPNConfig.applications || []);
-
-    const aplicationList = await $vpn.getPakcageList();
-
-    return aplicationList.map((item, index)=>{
+    return this.aplicationList.map((item, index)=>{
         return {
-            title: item,
+            title: item.appName,
+            summary: item.packageName + "  " + item.versionName,
             type: 'simple',
             itemStyle: {
                 backgroundColor: this.selectedApplications.has(item.packageName) ? "#31d18c" : "#fff"
@@ -36,6 +33,7 @@ module.exports = {
                 } else {
                     this.selectedApplications.add(item.packageName);
                 }
+                this.refresh();
             },
             async onLongClick() {
 
@@ -43,4 +41,10 @@ module.exports = {
         }
     })
   },
+  async create() {
+    const VPNConfig = helper.getVPNConfig();
+    this.selectedApplications = new Set(VPNConfig.applications || []);
+
+    this.aplicationList = await $vpn.getPakcageList();
+  }
 };
