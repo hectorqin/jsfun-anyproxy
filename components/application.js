@@ -41,7 +41,7 @@ module.exports = {
         }
     })
   },
-  async create() {
+  async beforeCreate() {
     const VPNConfig = helper.getVPNConfig();
     this.selectedApplications = new Set(VPNConfig.applications || []);
 
