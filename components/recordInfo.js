@@ -29,6 +29,10 @@ module.exports = {
         {
           title: 'General',
           type: 'category',
+          itemStyle: {
+            fontWeight: '800',
+            backgroundColor: '#e2e2e2',
+          }
         },
         {
           title: 'Method: ' + data.method,
@@ -45,6 +49,10 @@ module.exports = {
         {
           title: 'Header',
           type: 'category',
+          itemStyle: {
+            fontWeight: '800',
+            backgroundColor: '#e2e2e2',
+          }
         },
         ...Object.keys(data.reqHeader).map((item) => {
           return {
@@ -55,6 +63,16 @@ module.exports = {
         {
           title: 'Body',
           type: 'category',
+          itemStyle: {
+            fontWeight: '800',
+            backgroundColor: '#e2e2e2',
+          },
+          action: data.method === 'POST' || data.method === 'PUT' ? {
+            title: '点击查看请求Body',
+            onClick() {
+              $ui.browser(`${getWebAPI()}/fetchReqBody?id=${data.id}`);
+            }
+          } : {}
         },
         {
           title: data.reqBody,
@@ -65,6 +83,10 @@ module.exports = {
         {
           title: 'General',
           type: 'category',
+          itemStyle: {
+            fontWeight: '800',
+            backgroundColor: '#e2e2e2',
+          },
         },
         {
           title: 'statusCode: ' + data.statusCode,
@@ -73,6 +95,10 @@ module.exports = {
         {
           title: 'Header',
           type: 'category',
+          itemStyle: {
+            fontWeight: '800',
+            backgroundColor: '#e2e2e2',
+          },
         },
         ...Object.keys(data.resHeader).map((item) => {
           return {
@@ -83,11 +109,17 @@ module.exports = {
         {
           title: 'Body',
           type: 'category',
-        },
-        {
-          title: data.resBody,
-          type: 'simple',
-        },
+          itemStyle: {
+            fontWeight: '800',
+            backgroundColor: '#e2e2e2',
+          },
+          action: {
+            title: '点击查看响应Body',
+            onClick() {
+              $ui.browser(`${getWebAPI()}/downloadBody?id=${data.id}&raw=true`);
+            }
+          }
+        }
       ];
     }
     return [

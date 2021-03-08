@@ -284,6 +284,18 @@ module.exports.startHTTPProxy = function (options) {
     });
     proxyServer.start();
 
+    proxyServer.recorder.on('update', function(req) {
+      if (global.eventHub) {
+        global.eventHub.emit('request', req);
+      }
+    });
+
+    proxyServer.on('close', () => {
+      if (global.eventHub) {
+        global.eventHub.emit('proxyStoped');
+      }
+    });
+
     global.anyproxyServer = proxyServer;
   });
 };
@@ -307,19 +319,34 @@ function getVPNConfig() {
   }
 }
 
-module.exports.setVPN2Socks = async function (host, port) {
-  await $vpn.startTunnel('Anyproxy', Object.assign({
+module.exports.getVPNConfig = getVPNConfig;
+
+function saveVPNConfig(config) {
+  try {
+    const VPNConfig = path.resolve(process.env.DATA_DIR, 'VPN.json');
+    return fs.writeFileSync(VPNConfig, JSON.stringify(config || {}, null, 4));
+  } catch (error) {
+    return false;
+  }
+}
+
+module.exports.saveVPNConfig = saveVPNConfig;
+
+module.exports.setVPN2Socks = async function (host, port, options) {
+  const config = Object.assign({
     name: 'Anyproxy',
     type: 1, // 0 shadowsocks, 1 socks5
     host: host,
     port: port,
     udpRelay: true,
     dnsServer: '114.114.114.114',
-    vpnMode: 1,
+    vpnMode: $prefs.get('vpnMode'),
     applications: [
       'com.android.browser'
     ],
-  }, getVPNConfig()))
+  }, getVPNConfig(), options || {});
+  console.log("vpnConfig: ", config);
+  await $vpn.startTunnel('Anyproxy', config);
 }
 
 module.exports.stopTunnel = async function () {

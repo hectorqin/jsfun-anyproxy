@@ -33,6 +33,24 @@
       }
     ]
   },
+  "vpnMode": {
+    "type": "number",
+    "default": 0,
+    "title": "VPN模式",
+    "options": [{
+        "value": 0,
+        "title": "全局模式"
+      },
+      {
+        "value": 1,
+        "title": "白名单"
+      },
+      {
+        "value": 2,
+        "title": "黑名单"
+      }
+    ]
+  },
   "script": {
     "type": "boolean",
     "default": false,

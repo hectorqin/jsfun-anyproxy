@@ -8,6 +8,8 @@ const statusTip = {
   CLOSED: '已关闭',
 };
 
+const vpnModeTip = ["全局", "白名单", "黑名单"];
+
 module.exports = {
   type: 'list',
   title: 'Anyproxy',
@@ -21,10 +23,14 @@ module.exports = {
       console.log("startSocksProxy ");
       await helper.startSocksProxy(options);
       console.log("setVPN2Socks ");
-      await helper.setVPN2Socks(options.host, options.socksPort);
+      await helper.setVPN2Socks(options.host, options.socksPort, {
+        vpnMode: $prefs.get('vpnMode')
+      });
+    }
+    if (global.eventHub) {
+      global.eventHub.emit('proxyStarted');
     }
     console.log("startProxy success ");
-    this.initEventListener();
   },
   async stopProxy() {
     const options = getProxyOption();
@@ -33,6 +39,9 @@ module.exports = {
     }
     helper.stopSocksProxy();
     helper.stopHTTPProxy();
+    if (global.eventHub) {
+      global.eventHub.emit('proxyStoped');
+    }
   },
   async fetch() {
     const status = await getProxyStatus();
@@ -77,7 +86,10 @@ module.exports = {
               // 设置VPN
               await helper.setVPN2Socks(
                 status.options.host,
-                status.options.socksPort
+                status.options.socksPort,
+                {
+                  vpnMode: $prefs.get('vpnMode')
+                }
               );
             } else {
               // 关闭 VPN
@@ -90,20 +102,52 @@ module.exports = {
           this.refresh();
         },
       },
+      status.options.mode === 'VPN' ? {
+        title: 'VPN模式',
+        summary: vpnModeTip[status.options.vpnMode] + "模式",
+        onClick: async () => {
+          let selected = await $input.select({
+            title: '请选择VPN模式',
+            options: [
+              {
+                id: 0,
+                title: '全局模式'
+              },
+              {
+                id: 1,
+                title: '白名单模式'
+              },
+              {
+                id: 2,
+                title: '黑名单模式'
+              }
+            ]
+          });
+          if (selected) {
+            $prefs.set("vpnMode", selected.id);
+            this.refresh();
+            // 关闭 VPN
+            await helper.stopTunnel();
+            // 设置VPN
+            await helper.setVPN2Socks(
+              status.options.host,
+              status.options.socksPort,
+              this.vpnOptions
+            );
+          }
+        }
+      } : null,
+      status.options.mode === 'VPN' && this.vpnOptions.vpnMode ? {
+        title: "管理" + vpnModeTip[this.vpnOptions.vpnMode],
+        summary: "点击管理",
+        route: $route('application'),
+      } : null,
       {
         title: '脚本',
         summary: status.options.script ? '已开启' + ' ' + rule.getLocalScriptsCount() + '个' : '未开启',
         onClick: async () => {
           $prefs.set('script', !status.options.script);
-          // 重启代理
-          if (status === 'READY' && status.status === 'INIT') {
-            try {
-              await this.stopProxy();
-              await this.startProxy();
-            } catch (error) {
-              console.error(error);
-            }
-          }
+          rule.setScriptEnabled($prefs.get('script'));
           // 刷新页面
           this.refresh();
         },
@@ -130,17 +174,19 @@ module.exports = {
           : '未开启',
         // onClick: async () => {},
       },
-    ];
+    ].filter(v=>v);
   },
   initEventListener() {
-    if (global.anyproxyServer) {
-      global.anyproxyServer.on('close', () => {
+    if (global.eventHub) {
+      global.eventHub.on('proxyStoped', () => {
         this.refresh();
+      });
+      global.eventHub.on('stopProxy', () => {
+        this.stopProxy();
       });
     }
   },
   created() {
-    console.log('component created');
     this.initEventListener();
   },
 };

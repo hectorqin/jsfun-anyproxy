@@ -1,4 +1,7 @@
 const net = require('net');
+const events = require('events');
+const rule = require('./rule');
+
 global.lock();
 
 process.env.HOME = process.env.DATA_DIR;
@@ -24,13 +27,16 @@ function portInUse(port, host) {
 }
 
 module.exports = {
+  eventHub: new events.EventEmitter(),
   getProxyOption() {
+    rule.setScriptEnabled($prefs.get('script'));
     return {
       mode: $prefs.get('mode'),
+      vpnMode: $prefs.get('vpnMode'),
       host: $prefs.get('host') || '127.0.0.1',
       port: $prefs.get('port'),
       script: $prefs.get('script'),
-      rule: $prefs.get('script') ? require('./rule') : undefined,
+      rule: rule,
       socksPort: $prefs.get('socksPort'),
       webInterface: {
         enable: true,

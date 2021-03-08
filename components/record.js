@@ -14,22 +14,33 @@ module.exports = {
       }
     }
   ],
-  async fetch() {
-    const response = await $http
-      .get(`${getWebAPI()}/latestLog`)
-      .catch((e) => {
-        console.log(e);
+  getRecords(idStart, limit) {
+    return new Promise(function(resolve, reject) {
+      global.anyproxyServer.recorder.getRecords(idStart, limit, (err, docs) => {
+        if (err) {
+          reject(err.toString());
+        } else {
+          resolve(docs);
+        }
       });
-
-    let data = [];
-    if (response) {
-      // console.log("response.data  ", response.data);
-      try {
-        data = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
-      } catch (error) {}
+    })
+  },
+  async fetch({page}) {
+    if (!global.anyproxyServer || !global.anyproxyServer.recorder) {
+      return [];
     }
+    if (page) {
+      const lastRecordId = this.items && this.items.length ? this.items[this.items.length - 1].id : null;
+      const records = await this.getRecords(lastRecordId - 20, 20).catch(()=>{});
 
-    return this.transformData(data);
+      return {
+        nextPage: page + 1,
+        items: this.transformData(records || [])
+      }
+    }
+    const records = await this.getRecords(null, 100).catch(()=>{});
+
+    return this.transformData(records || []);
   },
   transformData(list) {
     if (!list) {
@@ -54,5 +65,11 @@ module.exports = {
     });
     return data;
   },
-  created() {},
+  created() {
+    if (global.eventHub) {
+      global.eventHub.on('update', (doc) => {
+        this.refresh();
+      });
+    }
+  },
 };

@@ -32,7 +32,7 @@ const defaultScriptContext = {
         global.__broadcast('notification.post', {
           title: title,
           subTitle: subTitle,
-          content: content,
+          message: content,
         });
       } else {
         console.warn('不支持发送通知的环境');
@@ -143,6 +143,7 @@ function runScript(script, context) {
 
 module.exports = {
   summary: 'Loon script adapter',
+  scriptEnabled: false,
   getDataPath() {
     return userData;
   },
@@ -154,6 +155,9 @@ module.exports = {
   },
   resetMITMHosts() {
     mitmHosts = null;
+  },
+  setScriptEnabled(enabled) {
+    this.scriptEnabled = enabled
   },
   getLocalScripts: getLocalScripts,
   getLocalScriptsCount: getLocalScriptsCount,
@@ -268,6 +272,9 @@ module.exports = {
   //   _req: { /* ... */}
   // }
   beforeSendRequest(requestDetail) {
+    if (!this.scriptEnabled) {
+      return null;
+    }
     const scripts = getLocalScripts('http-request');
     let modified = {};
     return new Promise(function (resolve) {
@@ -327,6 +334,9 @@ module.exports = {
   //   _res: { /* ... */ }
   // }
   beforeSendResponse(requestDetail, responseDetail) {
+    if (!this.scriptEnabled) {
+      return null;
+    }
     const scripts = getLocalScripts('http-response');
     let modified = {};
     return new Promise(function (resolve) {

@@ -50,8 +50,10 @@ module.exports = {
             hint: '名称',
             value: ''
           });
-          scriptConfig.title = title;
-          this.refresh();
+          if (title) {
+            scriptConfig.title = title;
+            this.refresh();
+          }
         }
       },
       {
@@ -72,8 +74,10 @@ module.exports = {
               }
             ]
           });
-          scriptConfig.type = selected.id;
-          this.refresh();
+          if (selected) {
+            scriptConfig.type = selected.id;
+            this.refresh();
+          }
         }
       },
       {
@@ -86,8 +90,10 @@ module.exports = {
             hint: '匹配模式',
             value: ''
           });
-          scriptConfig.patern = patern;
-          this.refresh();
+          if (patern) {
+            scriptConfig.patern = patern;
+            this.refresh();
+          }
         }
       },
       {
@@ -100,8 +106,10 @@ module.exports = {
             hint: '脚本路径',
             value: ''
           });
-          scriptConfig.path = path;
-          this.refresh();
+          if (path) {
+            scriptConfig.path = path;
+            this.refresh();
+          }
         }
       },
       {
@@ -114,8 +122,10 @@ module.exports = {
             hint: '超时时间',
             value: ''
           });
-          scriptConfig.timeout = timeout;
-          this.refresh();
+          if (timeout) {
+            scriptConfig.timeout = timeout;
+            this.refresh();
+          }
         }
       },
     ];
