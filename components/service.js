@@ -132,13 +132,15 @@ module.exports = {
             await helper.setVPN2Socks(
               status.options.host,
               status.options.socksPort,
-              this.vpnOptions
+              {
+                vpnMode: $prefs.get('vpnMode')
+              }
             );
           }
         }
       } : null,
-      status.options.mode === 'VPN' && this.vpnOptions.vpnMode ? {
-        title: "管理" + vpnModeTip[this.vpnOptions.vpnMode],
+      status.options.mode === 'VPN' && status.options.vpnMode ? {
+        title: "管理" + vpnModeTip[status.options.vpnMode],
         summary: "点击管理",
         route: $route('application'),
       } : null,

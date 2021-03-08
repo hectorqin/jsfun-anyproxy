@@ -5,17 +5,17 @@ module.exports = {
     {
       title: '服务',
       route: $route('service'),
-      image: $assets('component.svg'),
+      image: $icon('vpn-key'),
     },
     {
       title: '记录',
       route: $route('record'),
-      image: $assets('global.svg'),
+      image: $icon('library-books'),
     },
     {
       title: '脚本',
       route: $route('script'),
-      image: $assets('global.svg'),
+      image: $icon('script?type=MaterialCommunityIcons'),
     },
     {
       title: '更多',
@@ -24,6 +24,6 @@ module.exports = {
     },
   ],
   created() {
-    console.log('component created');
+    // console.log('component created');
   },
 };
