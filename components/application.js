@@ -45,6 +45,6 @@ module.exports = {
     const VPNConfig = helper.getVPNConfig();
     this.selectedApplications = new Set(VPNConfig.applications || []);
 
-    this.aplicationList = await $vpn.getPakcageList();
+    this.aplicationList = await $vpn.getPackageList();
   }
 };
