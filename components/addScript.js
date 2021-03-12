@@ -13,6 +13,7 @@ module.exports = {
   type: "list",
   title: "添加脚本",
   isAdd: true,
+  isFetched: false,
   actions: [
     {
       id: "Save",
@@ -34,11 +35,12 @@ module.exports = {
     },
   ],
   async fetch({args}) {
-    if (args.script) {
+    if (args.script && !this.isFetched) {
       scriptConfig = args.script;
       this.isAdd = false;
       this.title = "编辑脚本";
     }
+    this.isFetched = true;
     return [
       {
         title: "名称",
