@@ -56,7 +56,7 @@ module.exports = {
       }
       data.push({
         title: item.method + ' ' + item.url,
-        summary: '',
+        summary: (item.statusCode || 'Loading') + '       ' + (item.length || 0) +  'byte        ' + this.parseTime(item.startTime),
         route: $route('recordInfo', {
           id: item.id,
         }),
@@ -64,6 +64,13 @@ module.exports = {
       });
     });
     return data;
+  },
+  parseTime(time) {
+    if (!time) {
+      return '';
+    }
+    const date = new Date(time);
+    return date.toLocaleString();
   },
   created() {
     if (global.eventHub) {

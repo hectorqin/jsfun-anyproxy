@@ -33,6 +33,7 @@ module.exports = {
     return {
       mode: $prefs.get('mode'),
       vpnMode: $prefs.get('vpnMode'),
+      tunnelType: $prefs.get('tunnelType'),
       host: $prefs.get('host') || '127.0.0.1',
       port: $prefs.get('port'),
       script: $prefs.get('script'),

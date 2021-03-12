@@ -28,7 +28,7 @@ module.exports = {
       requestItems = [
         {
           title: 'General',
-          type: 'category',
+          style: 'category',
           itemStyle: {
             fontWeight: '800',
             backgroundColor: '#e2e2e2',
@@ -36,19 +36,19 @@ module.exports = {
         },
         {
           title: 'Method: ' + data.method,
-          type: 'simple',
+          style: 'simple',
         },
         {
           title: 'Host: ' + data.host,
-          type: 'simple',
+          style: 'simple',
         },
         {
           title: 'URL: ' + data.url,
-          type: 'simple',
+          style: 'simple',
         },
         {
           title: 'Header',
-          type: 'category',
+          style: 'category',
           itemStyle: {
             fontWeight: '800',
             backgroundColor: '#e2e2e2',
@@ -57,12 +57,12 @@ module.exports = {
         ...Object.keys(data.reqHeader).map((item) => {
           return {
             title: item + ': ' + data.reqHeader[item],
-            type: 'simple',
+            style: 'simple',
           };
         }),
         {
           title: 'Body',
-          type: 'category',
+          style: 'category',
           itemStyle: {
             fontWeight: '800',
             backgroundColor: '#e2e2e2',
@@ -74,15 +74,15 @@ module.exports = {
             }
           } : {}
         },
-        {
-          title: data.reqBody,
-          type: 'simple',
-        },
-      ];
+        // {
+        //   title: data.reqBody,
+        //   style: 'simple',
+        // },
+      ].filter(v=>v);
       responseItems = [
         {
           title: 'General',
-          type: 'category',
+          style: 'category',
           itemStyle: {
             fontWeight: '800',
             backgroundColor: '#e2e2e2',
@@ -90,11 +90,11 @@ module.exports = {
         },
         {
           title: 'statusCode: ' + data.statusCode,
-          type: 'simple',
+          style: 'simple',
         },
         {
           title: 'Header',
-          type: 'category',
+          style: 'category',
           itemStyle: {
             fontWeight: '800',
             backgroundColor: '#e2e2e2',
@@ -103,12 +103,12 @@ module.exports = {
         ...Object.keys(data.resHeader).map((item) => {
           return {
             title: item + ': ' + data.resHeader[item],
-            type: 'simple',
+            style: 'simple',
           };
         }),
         {
           title: 'Body',
-          type: 'category',
+          style: 'category',
           itemStyle: {
             fontWeight: '800',
             backgroundColor: '#e2e2e2',

@@ -51,6 +51,20 @@
       }
     ]
   },
+  "tunnelType": {
+    "type": "string",
+    "default": "vpn2http",
+    "title": "VPNTunnel模式",
+    "options": [{
+        "value": "vpn2socks",
+        "title": "vpn2socks"
+      },
+      {
+        "value": "vpn2http",
+        "title": "vpn2http"
+      }
+    ]
+  },
   "script": {
     "type": "boolean",
     "default": false,

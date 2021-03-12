@@ -332,23 +332,21 @@ function saveVPNConfig(config) {
 
 module.exports.saveVPNConfig = saveVPNConfig;
 
-module.exports.setVPN2Socks = async function (host, port, options) {
+module.exports.startVPNTunnel = async function (options) {
   const config = Object.assign({
     name: 'Anyproxy',
-    type: 1, // 0 shadowsocks, 1 socks5
-    host: host,
-    port: port,
+    type: 2, // 0 shadowsocks, 1 socks5, 2 http proxy
+    host: '127.0.0.1',
+    port: '8001',
     udpRelay: true,
     dnsServer: '114.114.114.114',
     vpnMode: $prefs.get('vpnMode'),
-    applications: [
-      'com.android.browser'
-    ],
+    applications: [],
   }, getVPNConfig(), options || {});
   console.log("vpnConfig: ", config);
   await $vpn.startTunnel('Anyproxy', config);
 }
 
-module.exports.stopTunnel = async function () {
+module.exports.stopVPNTunnel = async function () {
   await $vpn.stopTunnel('Anyproxy');
 }

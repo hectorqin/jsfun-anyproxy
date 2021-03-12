@@ -60,7 +60,7 @@ const defaultScriptContext = {
 
 let localScripts;
 let mitmHosts;
-
+let scriptEnabled = false;
 function getPath() {
   return path.resolve(userData, ...arguments);
 }
@@ -143,7 +143,6 @@ function runScript(script, context) {
 
 module.exports = {
   summary: 'Loon script adapter',
-  scriptEnabled: false,
   getDataPath() {
     return userData;
   },
@@ -157,7 +156,7 @@ module.exports = {
     mitmHosts = null;
   },
   setScriptEnabled(enabled) {
-    this.scriptEnabled = enabled
+    scriptEnabled = enabled
   },
   getLocalScripts: getLocalScripts,
   getLocalScriptsCount: getLocalScriptsCount,
@@ -273,7 +272,7 @@ module.exports = {
   // }
   beforeSendRequest(requestDetail) {
     return new Promise(function (resolve) {
-      if (!this.scriptEnabled) {
+      if (!scriptEnabled) {
         resolve(null);
         return;
       }
@@ -336,7 +335,7 @@ module.exports = {
   // }
   beforeSendResponse(requestDetail, responseDetail) {
     return new Promise(function (resolve) {
-      if (!this.scriptEnabled) {
+      if (!scriptEnabled) {
         resolve(null);
         return;
       }

@@ -8,19 +8,19 @@ module.exports = {
     return [
       {
         title: '本地脚本管理',
-        type: 'simple',
+        style: 'simple',
         route: $route('edit'),
       },
       {
         title: 'Data目录管理',
-        type: 'simple',
+        style: 'simple',
         route: $route('edit', {
           data: true
         }),
       },
       {
         title: 'HTTPS证书',
-        type: 'simple',
+        style: 'simple',
         summary: certExists ? "已生成" : "未生成",
         async onClick() {
           if (!certExists) {
@@ -36,7 +36,7 @@ module.exports = {
       },
       {
         title: '安装HTTPS证书',
-        type: 'simple',
+        style: 'simple',
         summary: "点击安装HTTPS证书",
         async onClick() {
           if (!certExists) {
@@ -59,7 +59,7 @@ module.exports = {
       },
       {
         title: '退出',
-        type: 'simple',
+        style: 'simple',
         summary: "点击将会终止扩展运行",
         onClick() {
           if (global.eventHub) {

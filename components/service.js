@@ -1,4 +1,5 @@
 const helper = require('../helper');
+const { getProxyOption } = require('../main');
 const rule = require('../rule');
 
 const statusTip = {
@@ -9,6 +10,9 @@ const statusTip = {
 };
 
 const vpnModeTip = ["全局", "白名单", "黑名单"];
+
+const VPN2SOCKS="vpn2socks";
+const VPN2HTTP="vpn2http";
 
 module.exports = {
   type: 'list',
@@ -22,10 +26,7 @@ module.exports = {
     if (options.mode === 'VPN') {
       console.log("startSocksProxy ");
       await helper.startSocksProxy(options);
-      console.log("setVPN2Socks ");
-      await helper.setVPN2Socks(options.host, options.socksPort, {
-        vpnMode: $prefs.get('vpnMode')
-      });
+      await this.startVPNTunnel(options);
     }
     if (global.eventHub) {
       global.eventHub.emit('proxyStarted');
@@ -35,13 +36,23 @@ module.exports = {
   async stopProxy() {
     const options = getProxyOption();
     if (options.mode === 'VPN') {
-      await helper.stopTunnel();
+      await helper.stopVPNTunnel();
     }
     helper.stopSocksProxy();
     helper.stopHTTPProxy();
     if (global.eventHub) {
       global.eventHub.emit('proxyStoped');
     }
+  },
+  async startVPNTunnel(options) {
+    options = options || getProxyOption();
+    console.log("startVPNTunnel ");
+    await helper.startVPNTunnel({
+      host: options.host,
+      port: options.tunnelType === VPN2SOCKS ? options.socksPort : options.port,
+      type: options.tunnelType === VPN2SOCKS ? 1 : 2,
+      vpnMode: $prefs.get('vpnMode')
+    });
   },
   async fetch() {
     const status = await getProxyStatus();
@@ -83,17 +94,11 @@ module.exports = {
               if (!status.socksPortInUse) {
                 await helper.startSocksProxy(status.options);
               }
-              // 设置VPN
-              await helper.setVPN2Socks(
-                status.options.host,
-                status.options.socksPort,
-                {
-                  vpnMode: $prefs.get('vpnMode')
-                }
-              );
+              // 启动 VPN
+              await this.startVPNTunnel(status.options);
             } else {
               // 关闭 VPN
-              await helper.stopTunnel();
+              await helper.stopVPNTunnel();
               // 关闭 socksServer
               helper.stopSocksProxy();
             }
@@ -127,15 +132,36 @@ module.exports = {
             $prefs.set("vpnMode", selected.id);
             this.refresh();
             // 关闭 VPN
-            await helper.stopTunnel();
-            // 设置VPN
-            await helper.setVPN2Socks(
-              status.options.host,
-              status.options.socksPort,
+            await helper.stopVPNTunnel();
+            // 启动 VPN
+            await this.startVPNTunnel();
+          }
+        }
+      } : null,
+      status.options.mode === 'VPN' ? {
+        title: 'VPNTunnel模式',
+        summary: status.options.tunnelType,
+        onClick: async () => {
+          let selected = await $input.select({
+            title: '请选择VPNTunnel模式',
+            options: [
               {
-                vpnMode: $prefs.get('vpnMode')
+                id: 'vpn2socks',
+                title: 'vpn2socks'
+              },
+              {
+                id: 'vpn2http',
+                title: 'vpn2http'
               }
-            );
+            ]
+          });
+          if (selected) {
+            $prefs.set("tunnelType", selected.id);
+            this.refresh();
+            // 关闭 VPN
+            await helper.stopVPNTunnel();
+            // 启动 VPN
+            await this.startVPNTunnel();
           }
         }
       } : null,

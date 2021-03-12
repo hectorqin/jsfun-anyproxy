@@ -35,7 +35,7 @@ module.exports = {
     return hosts.map((item, index)=>{
         return {
             title: item,
-            type: 'simple',
+            style: 'simple',
             async onClick() {
               const host = await $input.prompt({
                 title: '请输入host',

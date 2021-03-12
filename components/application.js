@@ -23,7 +23,7 @@ module.exports = {
         return {
             title: item.appName,
             summary: item.packageName + "  " + item.versionName,
-            type: 'simple',
+            style: 'simple',
             itemStyle: {
                 backgroundColor: this.selectedApplications.has(item.packageName) ? "#31d18c" : "#fff"
             },

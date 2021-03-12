@@ -43,12 +43,12 @@ module.exports = {
       {
         title: "名称",
         summary: scriptConfig.title,
-        type: "simple",
+        style: "simple",
         async onClick(){
           const title = await $input.prompt({
             title: '请输入脚本名称',
             hint: '名称',
-            value: ''
+            value: scriptConfig.title || ''
           });
           if (title) {
             scriptConfig.title = title;
@@ -59,7 +59,7 @@ module.exports = {
       {
         title: "类型",
         summary: scriptConfig.type,
-        type: "simple",
+        style: "simple",
         async onClick(){
           let selected = await $input.select({
             title: '请选择脚本类型',
@@ -83,12 +83,12 @@ module.exports = {
       {
         title: "匹配模式",
         summary: scriptConfig.patern,
-        type: "simple",
+        style: "simple",
         async onClick(){
           const patern = await $input.prompt({
             title: '请输入匹配模式',
             hint: '匹配模式',
-            value: ''
+            value: scriptConfig.patern || ''
           });
           if (patern) {
             scriptConfig.patern = patern;
@@ -99,12 +99,12 @@ module.exports = {
       {
         title: "脚本路径",
         summary: scriptConfig.path,
-        type: "simple",
+        style: "simple",
         async onClick(){
           const path = await $input.prompt({
             title: '请输入脚本路径',
             hint: '脚本路径',
-            value: ''
+            value: scriptConfig.path || ''
           });
           if (path) {
             scriptConfig.path = path;
@@ -115,12 +115,12 @@ module.exports = {
       {
         title: "超时时间",
         summary: scriptConfig.timeout || 0,
-        type: "simple",
+        style: "simple",
         async onClick(){
           const timeout = await $input.number({
             title: '请输入超时时间',
             hint: '超时时间',
-            value: ''
+            value: scriptConfig.timeout || ''
           });
           if (timeout) {
             scriptConfig.timeout = timeout;

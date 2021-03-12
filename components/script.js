@@ -25,13 +25,13 @@ module.exports = {
     return [
       {
         title: 'HTTP-Reqeust',
-        type: 'general',
+        style: 'category',
       },
       ...httpRequest.map((item) => {
         return {
           title: item.title,
           summary: '脚本: ' + item.path,
-          type: 'simple',
+          style: 'simple',
           route: $route('addScript', {
             script: item
           }),
@@ -49,13 +49,13 @@ module.exports = {
       }),
       {
         title: 'HTTP-Response',
-        type: 'general',
+        style: 'category',
       },
       ...httpResponse.map((item) => {
         return {
           title: item.title,
           summary: '脚本: ' + item.path,
-          type: 'simple',
+          style: 'simple',
           async onClick() {
             let ok = await $input.confirm({
                 title: '操作确认',
