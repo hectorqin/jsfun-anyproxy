@@ -31,6 +31,7 @@ module.exports = {
     },
   ],
   async fetch() {
+    rule.resetMITMHosts();
     const hosts = rule.getMITMHosts();
     return hosts.map((item, index)=>{
         return {

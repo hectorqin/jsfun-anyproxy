@@ -132,7 +132,7 @@ module.exports = {
       },
     ];
   },
-  created() {
+  beforeCreate() {
     scriptConfig = {};
   },
 };

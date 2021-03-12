@@ -20,6 +20,7 @@ module.exports = {
     }
   ],
   async fetch() {
+    rule.resetLocalScript();
     const httpRequest = rule.getLocalScripts('http-request');
     const httpResponse = rule.getLocalScripts('http-response');
     return [
