@@ -65,6 +65,9 @@ module.exports = {
             ? '点击关闭'
             : '点击启动',
         onClick: async () => {
+          if (!await showAgreement()) {
+            return false;
+          }
           // 切换代理模式
           try {
             if (status.status === 'READY' || status.status === 'INIT') {

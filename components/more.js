@@ -39,6 +39,11 @@ module.exports = {
         style: 'simple',
         summary: "点击安装HTTPS证书",
         async onClick() {
+          const status = await getProxyStatus();
+          if (status.status !== 'READY' && status.status !== 'INIT') {
+            $ui.toast("请先启动Anyproxy服务");
+            return;
+          }
           if (!certExists) {
             certMgr.generateRootCA(function(error, keyPath, crtPath) {
               if (!error) {

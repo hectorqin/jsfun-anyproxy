@@ -91,6 +91,33 @@ module.exports = {
       $prefs.get('webPort')
     );
   },
+  async showAgreement() {
+    if (!$storage.get('agreement')) {
+      const result = await $input.prompt({
+        title: '隐私和免责协议',
+        content: `隐私说明
+        JSFun-Anyproxy(以下简称Anyproxy)是安卓应用JSFun一个网络代理插件，在使用过程中将会记录下您的一些网络浏览记录，您可以使用这些记录查看最近的网络请求。Anyproxy绝对不会将您的任何信息，包括但不限于浏览记录、服务器信息上传到任何服务器。
+        免责声明
+        1、Anyproxy只提供基本的脚本API供用户编写、测试脚本，Anyproxy不提供任何具体的脚本，为了自身数据安全和数据隐私，请谨慎下载和使用他人的脚本
+        2、请勿使用和分享任何有关解密、解锁的脚本，对于由此引起的任何隐私泄漏或其他后果Anyproxy概不负责
+        3、请勿将脚本用于任何商业用途或者非法目的，对于此造成的任何后果Anyproxy概不负责
+        4、任何使用Anyproxy的用户都应该认真阅读以上声明，Anyproxy有权更改、补充此免责声明的权利，一旦使用Anyproxy的脚本功能便视为同意此声明
+
+        请在下面的输入框中输入 我同意 来继续使用`,
+        hint: '我同意',
+        value: ''
+      });
+      if (result && result === '我同意') {
+        $storage.put('agreement', {
+          result: result,
+          time: (new Date()).getTime(),
+        });
+        return true;
+      }
+      return false;
+    }
+    return true;
+  }
   // start() {
   //   // 锁定进程，避免被退出
   //   // 获取配置
