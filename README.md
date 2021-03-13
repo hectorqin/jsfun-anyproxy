@@ -1,0 +1,3 @@
+# jsfun-anyproxy
+
+Deleted
