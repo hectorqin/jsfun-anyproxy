@@ -93,7 +93,7 @@ module.exports = {
   },
   async showAgreement() {
     if (!$storage.get('agreement')) {
-      const result = await $input.prompt({
+      const result = await $input.confirm({
         title: '隐私和免责协议',
         content: `隐私说明
         JSFun-Anyproxy(以下简称Anyproxy)是安卓应用JSFun一个网络代理插件，在使用过程中将会记录下您的一些网络浏览记录，您可以使用这些记录查看最近的网络请求。Anyproxy绝对不会将您的任何信息，包括但不限于浏览记录、服务器信息上传到任何服务器。
@@ -103,13 +103,12 @@ module.exports = {
         3、请勿将脚本用于任何商业用途或者非法目的，对于此造成的任何后果Anyproxy概不负责
         4、任何使用Anyproxy的用户都应该认真阅读以上声明，Anyproxy有权更改、补充此免责声明的权利，一旦使用Anyproxy的脚本功能便视为同意此声明
 
-        请在下面的输入框中输入 我同意 来继续使用`,
-        hint: '我同意',
-        value: ''
+        请仔细阅读协议后点击[我同意]来继续使用`,
+        okBtn: '我同意',
       });
-      if (result && result === '我同意') {
+      if (result) {
         $storage.put('agreement', {
-          result: result,
+          agree: result,
           time: (new Date()).getTime(),
         });
         return true;
